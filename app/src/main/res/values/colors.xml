@@ -1,5 +1,5 @@
 <resources>
-    <!-- Light mode -->
+    <!-- Your light palette -->
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
@@ -7,11 +7,21 @@
     <color name="textLight">#000000</color>
     <color name="cardLight">#FAFAFA</color>
 
-    <!-- Dark mode -->
+    <!-- Your dark palette -->
     <color name="colorPrimaryDarkMode">#121212</color>
     <color name="colorPrimaryDarkModeDark">#000000</color>
     <color name="colorAccentDarkMode">#BB86FC</color>
     <color name="backgroundDark">#121212</color>
     <color name="textDark">#FFFFFF</color>
     <color name="cardDark">#1E1E1E</color>
+
+    <!-- Common template colors (to satisfy references in generated values.xml) -->
+    <color name="purple_200">#BB86FC</color>
+    <color name="purple_500">#6200EE</color>
+    <color name="purple_700">#3700B3</color>
+    <color name="purple_200_alt">#BB86FC</color>
+    <color name="teal_200">#03DAC5</color>
+    <color name="teal_700">#018786</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
 </resources>

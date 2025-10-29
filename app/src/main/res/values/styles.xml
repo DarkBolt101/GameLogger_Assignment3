@@ -1,11 +1,26 @@
 <resources>
+    <!-- AppCompat Light, no action bar -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <!-- Core colors -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+
+        <!-- Background / text -->
         <item name="android:windowBackground">@color/backgroundLight</item>
         <item name="android:textColor">@color/textLight</item>
         <item name="android:editTextColor">@color/textLight</item>
-        <item name="android:cardBackgroundColor">@color/cardLight</item>
+
+        <!-- CardView default style (NO android: prefix here) -->
+        <item name="cardViewStyle">@style/AppCardViewStyle</item>
+    </style>
+
+    <!-- CardView style for light -->
+    <style name="AppCardViewStyle" parent="@style/CardView">
+        <item name="cardBackgroundColor">@color/cardLight</item>
+        <item name="cardUseCompatPadding">true</item>
+        <item name="cardPreventCornerOverlap">true</item>
+        <item name="cardCornerRadius">8dp</item>
+        <item name="cardElevation">2dp</item>
     </style>
 </resources>
