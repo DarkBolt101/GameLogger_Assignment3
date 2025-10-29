@@ -1,0 +1,11 @@
+<resources>
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimaryDarkMode</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkModeDark</item>
+        <item name="colorAccent">@color/colorAccentDarkMode</item>
+        <item name="android:windowBackground">@color/backgroundDark</item>
+        <item name="android:textColor">@color/textDark</item>
+        <item name="android:editTextColor">@color/textDark</item>
+        <item name="android:cardBackgroundColor">@color/cardDark</item>
+    </style>
+</resources>

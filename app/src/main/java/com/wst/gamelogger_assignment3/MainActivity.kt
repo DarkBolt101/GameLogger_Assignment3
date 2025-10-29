@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var titleText: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Apply last saved theme first
+        // Apply the theme before inflating UI
         applySavedTheme()
 
         super.onCreate(savedInstanceState)
@@ -27,7 +27,6 @@ class MainActivity : AppCompatActivity() {
         themeSwitch = findViewById(R.id.switch_theme)
         titleText = findViewById(R.id.toolbar_title)
 
-        // init fragment only once
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, FragmentGameList())
@@ -55,16 +54,22 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Set switch state from prefs and toggle
         val prefs = getSharedPreferences("prefs", Context.MODE_PRIVATE)
         themeSwitch.isChecked = prefs.getBoolean("dark_mode", false)
+
         themeSwitch.setOnCheckedChangeListener { _, isChecked ->
             prefs.edit().putBoolean("dark_mode", isChecked).apply()
-            AppCompatDelegate.setDefaultNightMode(
-                if (isChecked) AppCompatDelegate.MODE_NIGHT_YES
-                else AppCompatDelegate.MODE_NIGHT_NO
-            )
-            // No need to recreate aggressively; AppCompat handles it.
+
+            // Smooth fade animation for theme switching
+            val root = findViewById<android.view.View>(android.R.id.content)
+            root.alpha = 1f
+            root.animate().alpha(0f).setDuration(150).withEndAction {
+                AppCompatDelegate.setDefaultNightMode(
+                    if (isChecked) AppCompatDelegate.MODE_NIGHT_YES
+                    else AppCompatDelegate.MODE_NIGHT_NO
+                )
+                root.animate().alpha(1f).setDuration(150).start()
+            }.start()
         }
     }
 
