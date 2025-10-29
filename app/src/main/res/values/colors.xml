@@ -8,7 +8,7 @@
     <color name="cardLight">#FAFAFA</color>
 
     <!-- Your dark palette -->
-    <color name="colorPrimaryDarkMode">#121212</color>
+    <color name="colorPrimaryDarkMode">#B53F3F</color>
     <color name="colorPrimaryDarkModeDark">#000000</color>
     <color name="colorAccentDarkMode">#BB86FC</color>
     <color name="backgroundDark">#121212</color>
