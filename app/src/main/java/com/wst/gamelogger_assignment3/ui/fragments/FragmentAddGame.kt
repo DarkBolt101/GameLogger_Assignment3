@@ -81,7 +81,7 @@ class FragmentAddGame : Fragment() {
             val platform = platformEdit.text.toString().trim()
             val overview = overviewEdit.text.toString().trim()
 
-            // 🔒 Extra strict validation
+            // Stricter validation
             if (title.isEmpty() || platform.isEmpty() || overview.isEmpty()) {
                 Toast.makeText(requireContext(), "Please fill in all required fields!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
