@@ -5,9 +5,12 @@ import com.wst.gamelogger_assignment3.data.GameDao
 import kotlinx.coroutines.flow.Flow
 
 class GameRepository(private val dao: GameDao) {
-    val allGames: Flow<List<Game>> = dao.getAll()
-    suspend fun insert(game: Game) = dao.insert(game)
-    suspend fun update(game: Game) = dao.update(game)
-    suspend fun delete(game: Game) = dao.delete(game)
-    suspend fun getById(id: Int): Game? = dao.getById(id)
+
+    val activeGames: Flow<List<Game>> = dao.getActiveGames()
+    val completedGames: Flow<List<Game>> = dao.getCompletedGames()
+
+    suspend fun insertGame(game: Game) = dao.insertGame(game)
+    suspend fun updateGame(game: Game) = dao.updateGame(game)
+    suspend fun deleteGame(game: Game) = dao.deleteGame(game)
+    suspend fun setCompleted(id: Int, isCompleted: Boolean) = dao.updateCompleted(id, isCompleted)
 }

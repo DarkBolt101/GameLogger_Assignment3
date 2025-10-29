@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import com.wst.gamelogger_assignment3.Game
 import com.wst.gamelogger_assignment3.database.Converters
 
-@Database(entities = [Game::class], version = 1, exportSchema = false)
+@Database(entities = [Game::class], version = 2, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class GameDatabase : RoomDatabase() {
     abstract fun gameDao(): GameDao

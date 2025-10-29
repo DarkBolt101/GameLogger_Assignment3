@@ -3,9 +3,7 @@ package com.wst.gamelogger_assignment3.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import com.wst.gamelogger_assignment3.Game
@@ -14,38 +12,46 @@ import com.wst.gamelogger_assignment3.R
 class GameAdapter(
     private var games: List<Game>,
     private val onDelete: (Game) -> Unit,
-    private val onClick: (Game) -> Unit
-) : RecyclerView.Adapter<GameAdapter.Holder>() {
+    private val onItemClick: (Game) -> Unit,
+    private val onToggleComplete: (Game, Boolean) -> Unit
+) : RecyclerView.Adapter<GameAdapter.GameViewHolder>() {
 
-    class Holder(v: View) : RecyclerView.ViewHolder(v) {
-        val image: ImageView = v.findViewById(R.id.image_game_cover)
-        val title: TextView = v.findViewById(R.id.text_game_title)
-        val platform: TextView = v.findViewById(R.id.text_game_platform)
-        val genre: TextView = v.findViewById(R.id.text_game_genre)
-        val overview: TextView = v.findViewById(R.id.text_game_overview)
-        val delete: Button = v.findViewById(R.id.button_delete_game)
+    class GameViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val image: ImageView = view.findViewById(R.id.image_game_cover)
+        val title: TextView = view.findViewById(R.id.text_game_title)
+        val platform: TextView = view.findViewById(R.id.text_game_platform)
+        val genre: TextView = view.findViewById(R.id.text_game_genre)
+        val overview: TextView = view.findViewById(R.id.text_game_overview)
+        val completedCheck: CheckBox = view.findViewById(R.id.checkbox_completed)
+        val deleteButton: Button = view.findViewById(R.id.button_delete_game)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_game, parent, false)
-        return Holder(v)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GameViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_game, parent, false)
+        return GameViewHolder(view)
     }
 
-    override fun onBindViewHolder(holder: Holder, position: Int) {
-        val g = games[position]
-        holder.title.text = g.title
-        holder.platform.text = g.platform
-        holder.genre.text = g.genre
-        holder.overview.text = g.overview ?: ""
-        holder.image.load(g.imageUrl ?: R.drawable.ic_launcher_background)
-        holder.delete.setOnClickListener { onDelete(g) }
-        holder.itemView.setOnClickListener { onClick(g) }
+    override fun onBindViewHolder(holder: GameViewHolder, position: Int) {
+        val game = games[position]
+        holder.title.text = game.title
+        holder.platform.text = game.platform
+        holder.genre.text = game.genre
+        holder.overview.text = game.overview ?: ""
+        holder.image.load(game.imageUrl)
+        holder.completedCheck.setOnCheckedChangeListener(null)
+        holder.completedCheck.isChecked = game.completed
+        holder.completedCheck.setOnCheckedChangeListener { _, checked ->
+            onToggleComplete(game, checked)
+        }
+
+        holder.deleteButton.setOnClickListener { onDelete(game) }
+        holder.itemView.setOnClickListener { onItemClick(game) }
     }
 
     override fun getItemCount(): Int = games.size
 
-    fun update(list: List<Game>) {
-        this.games = list
+    fun update(newGames: List<Game>) {
+        games = newGames
         notifyDataSetChanged()
     }
 }

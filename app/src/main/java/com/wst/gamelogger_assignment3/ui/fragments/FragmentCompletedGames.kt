@@ -2,7 +2,7 @@ package com.wst.gamelogger_assignment3.ui.fragments
 
 import android.os.Bundle
 import android.view.*
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -16,10 +16,10 @@ import com.wst.gamelogger_assignment3.viewmodel.GameViewModel
 import com.wst.gamelogger_assignment3.viewmodel.GameViewModelFactory
 import kotlinx.coroutines.launch
 
-class FragmentGameList : Fragment() {
+class FragmentCompletedGames : Fragment() {
 
     private lateinit var recycler: RecyclerView
-    private lateinit var addButton: FloatingActionButton
+    private lateinit var emptyText: TextView
     private lateinit var adapter: GameAdapter
 
     private val viewModel: GameViewModel by viewModels {
@@ -28,11 +28,11 @@ class FragmentGameList : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_game_list, c, false)
+        inflater.inflate(R.layout.fragment_completed_games, c, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        recycler = view.findViewById(R.id.recyclerViewGames)
-        addButton = view.findViewById(R.id.button_add_game)
+        recycler = view.findViewById(R.id.recyclerViewCompleted)
+        emptyText = view.findViewById(R.id.text_empty_completed)
 
         recycler.layoutManager = LinearLayoutManager(requireContext())
         adapter = GameAdapter(
@@ -45,21 +45,16 @@ class FragmentGameList : Fragment() {
                     .commit()
             },
             onToggleComplete = { game, checked ->
+                // If unchecked here, it moves back to Active list.
                 viewModel.toggleCompleted(game, checked)
             }
         )
         recycler.adapter = adapter
 
-        addButton.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, FragmentAddGame())
-                .addToBackStack(null)
-                .commit()
-        }
-
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.activeGames.collect { list ->
+            viewModel.completedGames.collect { list ->
                 adapter.update(list)
+                emptyText.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
             }
         }
     }
