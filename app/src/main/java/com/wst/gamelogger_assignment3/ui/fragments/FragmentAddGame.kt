@@ -54,7 +54,7 @@ class FragmentAddGame : Fragment() {
         cancelButton = view.findViewById(R.id.button_cancel)
         addAchievementBtn = view.findViewById(R.id.button_add_achievement)
 
-        // When title loses focus or when user finishes typing, try fetch
+        // When title loses focus, try fetch data automatically
         titleEdit.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus && titleEdit.text.toString().isNotBlank()) {
                 fetchFromApi(titleEdit.text.toString())
@@ -62,8 +62,7 @@ class FragmentAddGame : Fragment() {
         }
 
         addAchievementBtn.setOnClickListener {
-            val et = EditText(requireContext())
-            et.hint = "Achievement name"
+            val et = EditText(requireContext()).apply { hint = "Achievement name" }
             val btn = Button(requireContext()).apply { text = "Remove" }
             val row = LinearLayout(requireContext()).apply {
                 orientation = LinearLayout.HORIZONTAL
@@ -80,25 +79,26 @@ class FragmentAddGame : Fragment() {
         addButton.setOnClickListener {
             val title = titleEdit.text.toString().trim()
             val platform = platformEdit.text.toString().trim()
-            if (title.isEmpty() || platform.isEmpty()) {
-                Toast.makeText(requireContext(), "Enter title and platform", Toast.LENGTH_SHORT).show()
+            val overview = overviewEdit.text.toString().trim()
+
+            // 🔒 Extra strict validation
+            if (title.isEmpty() || platform.isEmpty() || overview.isEmpty()) {
+                Toast.makeText(requireContext(), "Please fill in all required fields!", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // gather achievements
+            // Gather achievements
             val achievements = mutableListOf<Achievement>()
             for (i in 0 until achievementsContainer.childCount) {
                 val child = achievementsContainer.getChildAt(i)
                 when (child) {
                     is ViewGroup -> {
-                        // editable row: [CheckBox, EditText, RemoveButton]
                         val cb = child.getChildAt(0) as CheckBox
                         val et = child.getChildAt(1) as? EditText
                         val name = et?.text?.toString()?.takeIf { it.isNotBlank() } ?: continue
                         achievements.add(Achievement(name, cb.isChecked))
                     }
                     is CheckBox -> {
-                        // simple checkbox achievement
                         val name = child.text.toString().takeIf { it.isNotBlank() } ?: continue
                         achievements.add(Achievement(name, child.isChecked))
                     }
@@ -108,28 +108,34 @@ class FragmentAddGame : Fragment() {
             val g = Game(
                 title = title,
                 platform = platform,
-                genre = "", // already filled by fetchFromApi if present
-                overview = overviewEdit.text.toString().takeIf { it.isNotBlank() },
+                genre = "", // filled later if fetched
+                overview = overview,
                 imageUrl = coverImage.tag as? String,
                 achievements = achievements,
-                notes = notesEdit.text.toString().takeIf { it.isNotBlank() }
+                notes = notesEdit.text.toString().takeIf { it.isNotBlank() },
+                completed = false
             )
 
-            viewModel.insertGame(g)
-            Toast.makeText(requireContext(), "Saved", Toast.LENGTH_SHORT).show()
-            parentFragmentManager.popBackStack()
+            lifecycleScope.launch {
+                viewModel.insertGame(g)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(requireContext(), "Game saved successfully!", Toast.LENGTH_SHORT).show()
+                    parentFragmentManager.popBackStack()
+                }
+            }
         }
     }
 
+    // --- Helper UI and API logic ---
     private fun addAchievementCheckbox(name: String, completed: Boolean = false) {
-        val cb = CheckBox(requireContext())
-        cb.text = name
-        cb.isChecked = completed
+        val cb = CheckBox(requireContext()).apply {
+            text = name
+            isChecked = completed
+        }
         achievementsContainer.addView(cb)
     }
 
     private fun addAchievementRow(name: String, completed: Boolean) {
-        // for editable rows: CheckBox + EditText + remove button
         val cb = CheckBox(requireContext())
         val et = EditText(requireContext()).apply { setText(name) }
         val remove = Button(requireContext()).apply { text = "Remove" }
@@ -172,39 +178,28 @@ class FragmentAddGame : Fragment() {
                 val search = api.searchGames(title, apiKey)
                 val item = search.results.firstOrNull()
                 if (item != null) {
-                    // try fetch details & achievements
                     val idOrSlug = item.slug ?: item.id?.toString() ?: item.name ?: ""
                     val details = try {
                         api.getGameDetails(idOrSlug, apiKey)
-                    } catch (t: Throwable) { null }
+                    } catch (_: Throwable) { null }
 
                     val achNames = try {
                         val res = api.getAchievements(idOrSlug, apiKey)
                         res.results.mapNotNull { it.name }
-                    } catch (t: Throwable) {
-                        emptyList<String>()
-                    }
+                    } catch (_: Throwable) { emptyList<String>() }
 
                     withContext(Dispatchers.Main) {
                         details?.let {
                             titleEdit.setText(it.name ?: title)
                             overviewEdit.setText(it.description_raw ?: overviewEdit.text.toString())
-                            // genres string
                             val genres = it.genres?.joinToString(", ") { g -> g.name } ?: ""
-                            // set a tag or put into an invisible field: we'll set image tag and set overview text
                             coverImage.load(it.background_image)
                             coverImage.tag = it.background_image
-                            // if achievements found, populate rows as checkboxes (editable afterwards)
-                            if (achNames.isNotEmpty()) {
-                                fillSimpleCheckboxAchievements(achNames)
-                            }
+                            if (achNames.isNotEmpty()) fillSimpleCheckboxAchievements(achNames)
                         } ?: run {
-                            // fallback: only search item
-                            withContext(Dispatchers.Main) {
-                                titleEdit.setText(item.name ?: title)
-                                coverImage.load(item.background_image)
-                                coverImage.tag = item.background_image
-                            }
+                            titleEdit.setText(item.name ?: title)
+                            coverImage.load(item.background_image)
+                            coverImage.tag = item.background_image
                         }
                     }
                 } else {
