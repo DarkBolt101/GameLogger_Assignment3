@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import coil.load
 import com.wst.gamelogger_assignment3.Achievement
 import com.wst.gamelogger_assignment3.Game
@@ -15,9 +16,8 @@ import com.wst.gamelogger_assignment3.data.GameDatabase
 import com.wst.gamelogger_assignment3.repository.GameRepository
 import com.wst.gamelogger_assignment3.viewmodel.GameViewModel
 import com.wst.gamelogger_assignment3.viewmodel.GameViewModelFactory
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
-import androidx.lifecycle.lifecycleScope
 
 class FragmentGameDetails : Fragment() {
 
@@ -63,49 +63,54 @@ class FragmentGameDetails : Fragment() {
         saveBtn = view.findViewById(R.id.button_save)
         cancelBtn = view.findViewById(R.id.button_cancel)
 
-        // observe the list and display the selected game
+        // Combine both lists so this fragment can show any game
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.allGames.collect { list ->
+            combine(viewModel.activeGames, viewModel.completedGames) { active, completed ->
+                active + completed
+            }.collect { list ->
                 val game = list.find { it.id == gameId } ?: return@collect
                 bindGame(game)
             }
         }
 
         saveBtn.setOnClickListener {
-            // read achievements / notes, create updated Game copy and update
-            val currentGame = run {
-                // read displayed fields, but simplest: re-create from UI
-                val title = titleTv.text.toString()
-                val platform = platformTv.text.toString()
-                val genre = genreTv.text.toString()
-                val overview = overviewTv.text.toString()
-                val notes = notesEdit.text.toString()
-                val ach = mutableListOf<Achievement>()
-                for (i in 0 until achievementsContainer.childCount) {
-                    val viewRow = achievementsContainer.getChildAt(i)
-                    when (viewRow) {
-                        is CheckBox -> {
-                            val name = viewRow.text.toString()
-                            ach.add(Achievement(name, viewRow.isChecked))
-                        }
-                        is ViewGroup -> {
-                            // row with [CheckBox, EditText, Remove]
-                            val cb = viewRow.getChildAt(0) as CheckBox
-                            val et = viewRow.getChildAt(1) as EditText
-                            ach.add(Achievement(et.text.toString(), cb.isChecked))
-                        }
-                    }
-                }
-                Game(id = gameId, title = title, platform = platform, genre = genre, overview = overview, imageUrl = image.tag as? String, achievements = ach, notes = notes)
-            }
+            val currentGame = collectGameDataFromUI()
             viewModel.updateGame(currentGame)
             Toast.makeText(requireContext(), "Saved", Toast.LENGTH_SHORT).show()
-            // remain on screen; if you want to pop back, call popBackStack()
         }
 
         cancelBtn.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
+    }
+
+    private fun collectGameDataFromUI(): Game {
+        val ach = mutableListOf<Achievement>()
+        for (i in 0 until achievementsContainer.childCount) {
+            val viewRow = achievementsContainer.getChildAt(i)
+            when (viewRow) {
+                is CheckBox -> {
+                    val name = viewRow.text.toString()
+                    ach.add(Achievement(name, viewRow.isChecked))
+                }
+                is ViewGroup -> {
+                    val cb = viewRow.getChildAt(0) as CheckBox
+                    val et = viewRow.getChildAt(1) as EditText
+                    ach.add(Achievement(et.text.toString(), cb.isChecked))
+                }
+            }
+        }
+
+        return Game(
+            id = gameId,
+            title = titleTv.text.toString(),
+            platform = platformTv.text.toString(),
+            genre = genreTv.text.toString(),
+            overview = overviewTv.text.toString(),
+            imageUrl = image.tag as? String,
+            achievements = ach,
+            notes = notesEdit.text.toString()
+        )
     }
 
     private fun bindGame(game: Game) {
@@ -119,11 +124,10 @@ class FragmentGameDetails : Fragment() {
 
         achievementsContainer.removeAllViews()
         game.achievements.forEach { ach ->
-            // create editable row: CheckBox + EditText + Remove
-            val cb = CheckBox(requireContext())
-            cb.isChecked = ach.completed
-            cb.text = ach.name
-            // simpler: show as checkbox lines; user can toggle (and we store name as text)
+            val cb = CheckBox(requireContext()).apply {
+                text = ach.name
+                isChecked = ach.completed
+            }
             achievementsContainer.addView(cb)
         }
     }

@@ -43,6 +43,14 @@
             android:maxLines="3"
             android:ellipsize="end" />
 
+        <CheckBox
+            android:id="@+id/checkbox_completed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Completed"
+            android:layout_gravity="end"
+            android:paddingTop="4dp"/>
+
         <Button
             android:id="@+id/button_delete_game"
             android:layout_width="wrap_content"

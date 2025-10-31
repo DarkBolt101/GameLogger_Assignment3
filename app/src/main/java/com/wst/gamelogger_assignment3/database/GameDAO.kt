@@ -6,18 +6,22 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GameDao {
-    @Query("SELECT * FROM games ORDER BY title ASC")
-    fun getAll(): Flow<List<Game>>
+
+    @Query("SELECT * FROM game_table WHERE completed = 0 ORDER BY title ASC")
+    fun getActiveGames(): Flow<List<Game>>
+
+    @Query("SELECT * FROM game_table WHERE completed = 1 ORDER BY title ASC")
+    fun getCompletedGames(): Flow<List<Game>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(game: Game): Long
+    suspend fun insertGame(game: Game)
 
     @Update
-    suspend fun update(game: Game)
+    suspend fun updateGame(game: Game)
 
     @Delete
-    suspend fun delete(game: Game)
+    suspend fun deleteGame(game: Game)
 
-    @Query("SELECT * FROM games WHERE id = :id LIMIT 1")
-    suspend fun getById(id: Int): Game?
+    @Query("UPDATE game_table SET completed = :isCompleted WHERE id = :gameId")
+    suspend fun updateCompleted(gameId: Int, isCompleted: Boolean)
 }

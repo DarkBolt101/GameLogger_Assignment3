@@ -1,0 +1,26 @@
+<resources>
+    <!-- AppCompat Dark (no action bar) -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <!-- Core colors -->
+        <item name="colorPrimary">@color/colorPrimaryDarkMode</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkModeDark</item>
+        <item name="colorAccent">@color/colorAccentDarkMode</item>
+
+        <!-- Background / text -->
+        <item name="android:windowBackground">@color/backgroundDark</item>
+        <item name="android:textColor">@color/textDark</item>
+        <item name="android:editTextColor">@color/textDark</item>
+
+        <!-- CardView default style -->
+        <item name="cardViewStyle">@style/AppCardViewStyle.Dark</item>
+    </style>
+
+    <!-- CardView style for dark -->
+    <style name="AppCardViewStyle.Dark" parent="@style/CardView">
+        <item name="cardBackgroundColor">@color/cardDark</item>
+        <item name="cardUseCompatPadding">true</item>
+        <item name="cardPreventCornerOverlap">true</item>
+        <item name="cardCornerRadius">8dp</item>
+        <item name="cardElevation">2dp</item>
+    </style>
+</resources>
