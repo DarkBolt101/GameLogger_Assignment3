@@ -14,7 +14,7 @@ data class Game(
     val imageUrl: String? = null,
     val achievements: List<Achievement> = emptyList(),
     val notes: String? = null,
-    val completed: Boolean = false                    // ⬅️ NEW
+    val completed: Boolean = false
 )
 
 data class Achievement(
