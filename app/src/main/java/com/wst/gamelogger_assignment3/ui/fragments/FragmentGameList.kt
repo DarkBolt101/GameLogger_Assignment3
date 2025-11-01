@@ -2,6 +2,7 @@ package com.wst.gamelogger_assignment3.ui.fragments
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -37,7 +38,9 @@ class FragmentGameList : Fragment() {
         recycler.layoutManager = LinearLayoutManager(requireContext())
         adapter = GameAdapter(
             games = emptyList(),
-            onDelete = { game -> viewModel.deleteGame(game) },
+            onDelete = { game ->
+                viewModel.deleteGame(game)
+                Toast.makeText(requireContext(), "Game deleted", Toast.LENGTH_SHORT).show() },
             onItemClick = { game ->
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, FragmentGameDetails.newInstance(game.id))
@@ -46,6 +49,11 @@ class FragmentGameList : Fragment() {
             },
             onToggleComplete = { game, checked ->
                 viewModel.toggleCompleted(game, checked)
+                if (checked) {
+                    Toast.makeText(requireContext(), "Game marked as completed", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Game marked as active", Toast.LENGTH_SHORT).show()
+                }
             }
         )
         recycler.adapter = adapter

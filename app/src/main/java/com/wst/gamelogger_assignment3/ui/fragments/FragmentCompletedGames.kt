@@ -1,13 +1,16 @@
 package com.wst.gamelogger_assignment3.ui.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import com.wst.gamelogger_assignment3.R
 import com.wst.gamelogger_assignment3.adapter.GameAdapter
 import com.wst.gamelogger_assignment3.data.GameDatabase
@@ -31,30 +34,46 @@ class FragmentCompletedGames : Fragment() {
         inflater.inflate(R.layout.fragment_completed_games, c, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        Log.d("FragmentCompletedGames", "onViewCreated started")
         recycler = view.findViewById(R.id.recyclerViewCompleted)
         emptyText = view.findViewById(R.id.text_empty_completed)
 
         recycler.layoutManager = LinearLayoutManager(requireContext())
         adapter = GameAdapter(
             games = emptyList(),
-            onDelete = { game -> viewModel.deleteGame(game) },
+            onDelete = { game ->
+                viewModel.deleteGame(game)
+                Toast.makeText(requireContext(), "Game deleted", Toast.LENGTH_SHORT).show()
+            },
             onItemClick = { game ->
+                Log.d("FragmentCompletedGames", "Item clicked: ${game.title}")
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, FragmentGameDetails.newInstance(game.id))
                     .addToBackStack(null)
                     .commit()
             },
             onToggleComplete = { game, checked ->
-                // If unchecked here, it moves back to Active list.
                 viewModel.toggleCompleted(game, checked)
+                if (checked) {
+                    Toast.makeText(requireContext(), "Game marked as completed", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(requireContext(), "Game marked as active", Toast.LENGTH_SHORT).show()
+                }
             }
         )
         recycler.adapter = adapter
 
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.completedGames.collect { list ->
-                adapter.update(list)
-                emptyText.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
+            try {
+                Log.d("FragmentCompletedGames", "Collecting completedGames flow")
+                viewModel.completedGames.collect { list ->
+                    Log.d("FragmentCompletedGames", "Received ${list.size} completed games")
+                    adapter.update(list)
+                    emptyText.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
+                }
+            } catch (e: Exception) {
+                Log.e("FragmentCompletedGames", "Error collecting completedGames", e)
+                Snackbar.make(requireView(), "Error loading list", Snackbar.LENGTH_SHORT).show()
             }
         }
     }
