@@ -43,7 +43,11 @@ class FragmentCompletedGames : Fragment() {
             games = emptyList(),
             onDelete = { game ->
                 viewModel.deleteGame(game)
-                Toast.makeText(requireContext(), "Game deleted", Toast.LENGTH_SHORT).show()
+                Snackbar.make(requireView(), "Game deleted", Snackbar.LENGTH_LONG)
+                    .setAction("Undo") {
+                        viewModel.insertGame(game)
+                        Toast.makeText(requireContext(), "Game restored", Toast.LENGTH_SHORT).show()
+                    }.show()
             },
             onItemClick = { game ->
                 Log.d("FragmentCompletedGames", "Item clicked: ${game.title}")

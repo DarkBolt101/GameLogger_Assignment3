@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.*
 import android.widget.Toast
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.snackbar.Snackbar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -40,7 +41,12 @@ class FragmentGameList : Fragment() {
             games = emptyList(),
             onDelete = { game ->
                 viewModel.deleteGame(game)
-                Toast.makeText(requireContext(), "Game deleted", Toast.LENGTH_SHORT).show() },
+                Snackbar.make(requireView(), "Game deleted", Snackbar.LENGTH_LONG)
+                    .setAction("Undo") {
+                        viewModel.insertGame(game)
+                        Toast.makeText(requireContext(), "Game restored", Toast.LENGTH_SHORT).show()
+                    }.show()
+            },
             onItemClick = { game ->
                 parentFragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, FragmentGameDetails.newInstance(game.id))
