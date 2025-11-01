@@ -71,7 +71,7 @@ class FragmentCompletedGames : Fragment() {
             try {
                 Log.d("FragmentCompletedGames", "Collecting completedGames flow")
                 viewModel.completedGames.collect { list ->
-                    Log.d("FragmentCompletedGames", "Received ${list.size} completed games")
+                    Log.d("FragmentCompletedGames", "Has ${list.size} completed games")
                     adapter.update(list)
                     emptyText.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
                 }
