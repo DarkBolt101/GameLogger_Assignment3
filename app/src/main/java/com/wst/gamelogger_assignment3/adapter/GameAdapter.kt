@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.*
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import coil.request.CachePolicy
 import com.wst.gamelogger_assignment3.Game
 import com.wst.gamelogger_assignment3.R
 
@@ -15,6 +16,11 @@ class GameAdapter(
     private val onItemClick: (Game) -> Unit,
     private val onToggleComplete: (Game, Boolean) -> Unit
 ) : RecyclerView.Adapter<GameAdapter.GameViewHolder>() {
+
+    // --- Coil Cache Toggle (Investigation)---
+    // Set to TRUE to enable Coil caching (default behaviour)
+    // Set to FALSE to disable Coil caching (for investigation purposes)
+    private val ENABLE_COIL_CACHE = true // Set to FALSE to disable Coil caching (ONLY for investigation purposes)
 
     class GameViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ImageView = view.findViewById(R.id.image_game_cover)
@@ -33,17 +39,31 @@ class GameAdapter(
 
     override fun onBindViewHolder(holder: GameViewHolder, position: Int) {
         val game = games[position]
+
+        // --- Text Data ---
         holder.title.text = game.title
         holder.platform.text = game.platform
         holder.genre.text = game.genre
         holder.overview.text = game.overview ?: ""
-        holder.image.load(game.imageUrl)
+
+        // --- Image Data (Loading Investigation) ---
+        if (ENABLE_COIL_CACHE) {
+            holder.image.load(game.imageUrl)
+        } else {
+            holder.image.load(game.imageUrl) {
+                memoryCachePolicy(CachePolicy.DISABLED)
+                diskCachePolicy(CachePolicy.DISABLED)
+            }
+        }
+
+        // --- Completion Checkbox ---
         holder.completedCheck.setOnCheckedChangeListener(null)
         holder.completedCheck.isChecked = game.completed
         holder.completedCheck.setOnCheckedChangeListener { _, checked ->
             onToggleComplete(game, checked)
         }
 
+        // --- Delete Button ---
         holder.deleteButton.setOnClickListener { onDelete(game) }
         holder.itemView.setOnClickListener { onItemClick(game) }
     }
